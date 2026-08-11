@@ -36,6 +36,7 @@ export const PageMenuItem: FC<Props> = ({
         width: '100%',
         m: 0
       }}
+      size="small"
       to={to}
     >
       <Typography

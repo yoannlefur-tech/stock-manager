@@ -1,10 +1,10 @@
 import { Avatar, Alert, Box, Button, CircularProgress, TextField } from "@mui/material";
 import { useState } from "react";
-import { useFetchWithAuth } from "../hooks/useFetchWithAuth";
-import { formatUserNameInitials } from '../utils/user'
-import { ActionFooter } from "./ActionFooter";
-import type { User } from "../types/user";
-import { useAuth } from "../hooks/useAuth";
+import { useFetchWithAuth } from "../../hooks/useFetchWithAuth";
+import { formatUserNameInitials } from '../../utils/user'
+import { ActionFooter } from "../ActionFooter";
+import type { User } from "../../types/user";
+import { useAuth } from "../../hooks/useAuth";
 
 type Props = {
   user: User
@@ -109,6 +109,7 @@ export default function UserProfilFormMobile({user, onClose}: Props) {
                             onChange={handleChange}
                             error={!!errors.firstName}
                             helperText={errors.firstName}
+                            size="small"
                             fullWidth
                         />
 
@@ -120,6 +121,7 @@ export default function UserProfilFormMobile({user, onClose}: Props) {
                             onChange={handleChange}
                             error={!!errors.lastName}
                             helperText={errors.lastName}
+                            size="small"
                             fullWidth
                         />
 
@@ -131,6 +133,7 @@ export default function UserProfilFormMobile({user, onClose}: Props) {
                             onChange={handleChange}
                             error={!!errors.email}
                             helperText={errors.email}
+                            size="small"
                             fullWidth
                         />
                     </Box>
@@ -140,6 +143,7 @@ export default function UserProfilFormMobile({user, onClose}: Props) {
                         autoFocus 
                         variant="outlined" 
                         onClick={onClose}
+                        size="small"
                     >
                         Annuler
                     </Button>
@@ -148,6 +152,7 @@ export default function UserProfilFormMobile({user, onClose}: Props) {
                         variant="contained"
                         disabled={isSubmitting}
                         startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : null}
+                        size="small"
                     >
                         {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
                     </Button>

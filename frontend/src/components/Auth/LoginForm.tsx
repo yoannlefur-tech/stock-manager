@@ -9,7 +9,7 @@ import {
   Paper,
   CircularProgress,
 } from '@mui/material'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -53,21 +53,26 @@ export default function LoginForm() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         bgcolor: 'grey.100',
       }}
     >
-      <Paper elevation={0} sx={{ p: 4, width: '100%', maxWidth: 400 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+      <Paper elevation={0} sx={{ p: 3, width: '100%', maxWidth: 400 }}>
+
+        <Typography variant="h2" color='primary' sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+          Gestion des stocks
+        </Typography>
+
+        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
           Connexion
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} >
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column' }} >
           <TextField
             label="Email"
             type="email"
@@ -76,6 +81,7 @@ export default function LoginForm() {
             onChange={handleChange}
             error={!!errors.email}
             helperText={errors.email}
+            size="small"
             fullWidth
           />
 
@@ -87,6 +93,7 @@ export default function LoginForm() {
             onChange={handleChange}
             error={!!errors.password}
             helperText={errors.password}
+            size="small"
             fullWidth
           />
 
@@ -96,6 +103,7 @@ export default function LoginForm() {
             fullWidth
             disabled={isSubmitting}
             startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : null}
+            size="small"
           >
             {isSubmitting ? 'Connexion...' : 'Se connecter'}
           </Button>

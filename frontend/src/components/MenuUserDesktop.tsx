@@ -6,7 +6,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from "react-router-dom";
-import UserProfilForm from "./UserProfileForm";
+import UserProfilForm from "./Profil/UserProfileForm";
+import { Paths } from "../types/router";
 
 export default function MenuUserDesktop() {
 
@@ -84,7 +85,7 @@ export default function MenuUserDesktop() {
                 </MenuItem>
                 <MenuItem onClick={() => { 
                     logout(); 
-                    navigate('/login') 
+                    navigate(Paths.Login) 
                 }}>
                     <ListItemIcon><LogoutIcon /></ListItemIcon>
                     <ListItemText>Déconnexion</ListItemText>

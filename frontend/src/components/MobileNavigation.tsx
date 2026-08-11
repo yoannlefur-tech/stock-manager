@@ -1,10 +1,13 @@
-import { Avatar, BottomNavigation, BottomNavigationAction, fabClasses, useTheme } from "@mui/material";
+import { Avatar, BottomNavigation, BottomNavigationAction, useTheme } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import SettingsOverscanIcon from '@mui/icons-material/SettingsOverscan';
 import { formatUserNameInitials } from "../utils/user";
+import { Paths } from "../types/router";
 
 export default function MobileNavigation() {
 
@@ -14,7 +17,9 @@ export default function MobileNavigation() {
     const { user } = useAuth()
 
     const NAV_ITEMS_MOBILE = [
-        { label: 'Accueil', icon: <HomeIcon />, path: '/home' },
+        { label: 'Accueil', icon: <HomeIcon />, path: Paths.Home },
+        { label: 'Scan', icon: <SettingsOverscanIcon />, path: Paths.Scan },
+        { label: 'Stocks', icon: <WarehouseIcon />, path: Paths.Stocks },
         { 
             label: '', 
             icon: 
@@ -28,7 +33,7 @@ export default function MobileNavigation() {
                         )}
                     </Avatar>
                 : <AccountCircleIcon />,
-            path: '/profil' 
+            path: Paths.Profile 
         },
     ]
 

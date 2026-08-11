@@ -1,9 +1,9 @@
 import { Alert, Avatar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Modal, Paper, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-import { useFetchWithAuth } from "../hooks/useFetchWithAuth";
-import { formatUserNameInitials } from "../utils/user";
-import type { User } from "../types/user";
-import { useAuth } from "../hooks/useAuth";
+import { useFetchWithAuth } from "../../hooks/useFetchWithAuth";
+import { formatUserNameInitials } from "../../utils/user";
+import type { User } from "../../types/user";
+import { useAuth } from "../../hooks/useAuth";
 
 interface Props {
     user: User
@@ -104,6 +104,7 @@ export default function UserProfilForm({user, open, setOpen}: Props) {
                         onChange={handleChange}
                         error={!!errors.firstName}
                         helperText={errors.firstName}
+                        size="small"
                         fullWidth
                     />
 
@@ -115,6 +116,7 @@ export default function UserProfilForm({user, open, setOpen}: Props) {
                         onChange={handleChange}
                         error={!!errors.lastName}
                         helperText={errors.lastName}
+                        size="small"
                         fullWidth
                     />
 
@@ -126,11 +128,16 @@ export default function UserProfilForm({user, open, setOpen}: Props) {
                         onChange={handleChange}
                         error={!!errors.email}
                         helperText={errors.email}
+                        size="small"
                         fullWidth
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button autoFocus onClick={handleClose}>
+                    <Button 
+                        autoFocus 
+                        onClick={handleClose}
+                        size="small"
+                    >
                         Annuler
                     </Button>
                     <Button
@@ -138,6 +145,7 @@ export default function UserProfilForm({user, open, setOpen}: Props) {
                         variant="contained"
                         disabled={isSubmitting}
                         startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : null}
+                        size="small"
                     >
                         {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
                     </Button>

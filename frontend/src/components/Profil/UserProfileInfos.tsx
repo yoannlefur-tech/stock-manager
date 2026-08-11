@@ -8,8 +8,8 @@ import {
 } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import type { SxProps } from '@mui/material'
-import type { User } from '../types/user'
-import { formatUserName, formatUserNameInitials } from '../utils/user'
+import type { User } from '../../types/user'
+import { formatUserName, formatUserNameInitials } from '../../utils/user'
 import type { FC } from 'react'
 
 type Props = {
@@ -77,6 +77,7 @@ export const UserProfileInfos: FC<Props> = ({
             e.stopPropagation()
             onClick && onClick()
           }}
+          size="small"
           sx={{
             p: 0,
             minWidth: 40,

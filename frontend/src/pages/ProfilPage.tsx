@@ -1,11 +1,11 @@
 import { Box, Divider, useMediaQuery, useTheme } from "@mui/material";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { UserProfileInfos } from "../components/UserProfileInfos";
+import { UserProfileInfos } from "../components/Profil/UserProfileInfos";
 import { useState } from "react";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { PageMenuItem } from "../components/PageMenuItem";
-import UserProfilFormMobile from "../components/UserProfileFormMobile";
+import UserProfilFormMobile from "../components/Profil/UserProfileFormMobile";
 
 export default function ProfilPage() {
    
@@ -48,7 +48,6 @@ export default function ProfilPage() {
                     />
                 </Box>
             </Box>
-
         ) : (
             <UserProfilFormMobile 
                 onClose={() => {

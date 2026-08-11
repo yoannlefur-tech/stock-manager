@@ -4,13 +4,12 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Model\UserDto;
-use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use App\Service\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -20,18 +19,13 @@ final class UserController extends AbstractController
 {
 
     public function __construct(
-        private readonly EntityManagerInterface $em,
         private readonly ValidatorInterface $validator,
-        private readonly UserRepository $userRepository,
+        private readonly UserManager $userManager,
     ) {}
 
     #[Route('/me', methods: ['GET'])]
-    public function getMe(): JsonResponse
+    public function getMe(#[CurrentUser] User $user): JsonResponse
     {
-        $user = $this->getUser();
-
-        assert($user instanceof User);
-
         return $this->json([
             'id'    => $user->getId(),
             'firstName' => $user->getFirstName(),
@@ -42,7 +36,25 @@ final class UserController extends AbstractController
 
 
     #[Route('/users/{id}', methods: ['PUT'])]
-    public function put(int $id, Request $request): JsonResponse
+    public function put(User $user, Request $request): JsonResponse
+    {
+        $dto = $this->mapRequestToDto($request);
+
+        if ($dto instanceof JsonResponse) {
+            return $dto;
+        }
+
+        $this->userManager->updateFromDto($user, $dto);
+
+        return $this->json(
+            $user,
+            JsonResponse::HTTP_OK,
+            [],
+            ['groups' => ['user:read']],
+        );
+    }
+
+    private function mapRequestToDto(Request $request): UserDto|JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -63,24 +75,6 @@ final class UserController extends AbstractController
             );
         }
 
-        $user = $this->userRepository->find($id);
-
-        if (!$user) {
-            throw new Exception("l'utilisateur n'existe pas");
-        }
-
-        $user
-            ->setFirstName($dto->firstName)
-            ->setLastName($dto->lastName)
-            ->setEmail($dto->email);
-
-        $this->em->flush();
-
-        return $this->json(
-            $user,
-            JsonResponse::HTTP_OK,
-            [],
-            ['groups' => ['user:read']],
-        );
+        return $dto;
     }
 }
