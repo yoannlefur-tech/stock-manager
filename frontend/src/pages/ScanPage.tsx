@@ -10,6 +10,12 @@ export default function ScanPage() {
 
     const { fetchWithAuth } = useFetchWithAuth();
 
+    const parseBrands = (brands: string): string[] => {
+        return brands
+            .split(',')
+            .map(b => b.trim())
+            .filter(Boolean)
+    }
 
     const handleScan = async (barcode: string) => {
         const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
@@ -24,7 +30,7 @@ export default function ScanPage() {
         const scannedProduct: ScannedProduct = {
             barcode,
             name:  product.product_name ?? 'Nom inconnu',
-            brands: product.brands ?? '',
+            brands: parseBrands(product.brands ?? ''),
             image: product.image_url ?? '',
         }
 

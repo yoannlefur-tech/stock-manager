@@ -7,7 +7,7 @@ import type { User } from "./user";
 export type Product = {
   id: string;
   name: string;
-  brand?: Brand;
+  brands?: Brand[];
   barcode?: string | null;
   quantity: number;
   dlc: string | null;
@@ -27,6 +27,6 @@ export type Products = {
 export type ScannedProduct = {
   barcode: string
   name: string
-  brands: string
+  brands: string[]
   image?: string
 }

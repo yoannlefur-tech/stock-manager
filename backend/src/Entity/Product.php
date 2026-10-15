@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ProductRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -45,21 +47,23 @@ class Product
     #[Groups(['user:read'])]
     private ?User $updatedBy = null;
 
-    #[ORM\ManyToOne(inversedBy: 'products')]
+    #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'])]
     #[Groups(['category:read'])]
     private ?Category $category = null;
-
-    #[ORM\ManyToOne(inversedBy: 'products', cascade: ['persist'])]
-    #[Groups(['brand:read'])]
-    private ?Brand $brand = null;
 
     #[ORM\OneToOne(mappedBy: 'product', cascade: ['persist', 'remove'])]
     #[Groups(['stock.small:read'])]
     private ?Stock $stock = null;
 
+    #[ORM\ManyToMany(targetEntity: Brand::class, inversedBy: 'products', cascade: ['persist'])]
+    #[ORM\JoinTable(name: 'product_brand')]
+    #[Groups(['brand:read'])]
+    private Collection $brands;
+
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
+        $this->brands = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -163,18 +167,6 @@ class Product
         return $this;
     }
 
-    public function getBrand(): ?Brand
-    {
-        return $this->brand;
-    }
-
-    public function setBrand(?Brand $brand): static
-    {
-        $this->brand = $brand;
-
-        return $this;
-    }
-
     public function getStock(): ?Stock
     {
         return $this->stock;
@@ -193,6 +185,33 @@ class Product
         }
 
         $this->stock = $stock;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Brand>
+     */
+    public function getBrands(): Collection
+    {
+        return $this->brands;
+    }
+
+    public function addBrand(Brand $brand): static
+    {
+        if (!$this->brands->contains($brand)) {
+            $this->brands->add($brand);
+            $brand->addProducts($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBrand(Brand $brand): static
+    {
+        if ($this->brands->removeElement($brand)) {
+            $brand->removeProducts($this);
+        }
 
         return $this;
     }

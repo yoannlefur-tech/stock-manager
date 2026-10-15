@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Product;
 use App\Entity\User;
 use App\Model\BrandDto;
+use App\Model\BrandDtoCollection;
 use App\Model\CategoryDto;
 use App\Model\ProductDto;
 use App\Model\StockDto;
 use App\Repository\ProductRepository;
 use App\Service\HttpParametersService;
 use App\Service\ProductManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +28,6 @@ final class ProductController extends AbstractController
 {
 
     public function __construct(
-        private readonly EntityManagerInterface $em,
         private readonly ValidatorInterface $validator,
         private readonly HttpParametersService $paramService,
         private readonly ProductRepository $productRepository,
@@ -90,7 +91,7 @@ final class ProductController extends AbstractController
     public function post(Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $dto = $this->mapRequestToDto($request);
-
+    
         if ($dto instanceof JsonResponse) {
             return $dto;
         }
@@ -127,8 +128,7 @@ final class ProductController extends AbstractController
     #[Route('/{id}', name: 'delete_post', methods: ['DELETE'])]
     public function delete(Product $product): JsonResponse
     {
-        $this->em->remove($product);
-        $this->em->flush();
+        $this->productManager->delete($product);
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }   
@@ -139,11 +139,16 @@ final class ProductController extends AbstractController
   
         $stockDto = new StockDto();
         $stockDto->id =  $data['stockId'] ?? null;
-        $stockDto->quantity =  $data['stockQuantity'] ?? '';
+        $stockDto->quantity = (float) ($data['stockQuantity'] ?? 0);
 
-        $brandDto = new BrandDto();
-        $brandDto->id =  $data['brandId'] ?? null;
-        $brandDto->name =  $data['brandName'] ?? '';
+
+        $brandDtoCollection = new BrandDtoCollection();
+        foreach ($data['brands'] ?? [] as $brandData) {
+            $brandDto = new BrandDto();
+            $brandDto->id =  $brandData['id'] ?? null;
+            $brandDto->name =  $brandData['name'] ?? '';
+            $brandDtoCollection->add($brandDto);
+        };
 
         $categoryDto = new CategoryDto();
         $categoryDto->id =  $data['categoryId'] ?? null;
@@ -154,7 +159,7 @@ final class ProductController extends AbstractController
         $dto->barcode  = $data['barcode'] ?? '';
         $dto->dlc  = $data['dlc'] ?? '';
         $dto->category = $categoryDto;
-        $dto->brand  = $brandDto;
+        $dto->brands  = $brandDtoCollection;
         $dto->stock  = $stockDto;
 
         $errors = $this->validator->validate($dto);

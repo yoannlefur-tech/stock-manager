@@ -14,6 +14,7 @@ import { useDelete } from "../../hooks/useDelete";
 import { useState } from "react";
 import { CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR } from "../../utils/category";
 import CustomizedSnackbars from "../CustomizedSnackbars";
+import { flushSync } from "react-dom";
 
 interface DlcMeta {
   color: ChipProps['color']
@@ -92,14 +93,16 @@ export default function ProductCardComponent({ product }: Props) {
                         </Box>
                     )}
 
-                    {product.brand && (
-                        <Box>
-                            <Chip
-                                label={product.brand.name}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontWeight: 500, fontSize: 14 }}
-                            />
+                    {product.brands && (
+                        <Box sx={{ display: 'flex', justifyContent: "flex-start", alignItems: "center", my: 1  }}>
+                            {product.brands.map((brand) => (
+                                <Chip
+                                    label={brand.name}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontWeight: 500, fontSize: 14, mr: 1 }}
+                                />
+                            ))}
                         </Box>
                     )}
 

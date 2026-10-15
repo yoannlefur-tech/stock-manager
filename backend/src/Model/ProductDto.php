@@ -17,6 +17,6 @@ class ProductDto
     #[Assert\Date]
     public ?string $dlc = null;
     public ?CategoryDto $category = null;
-    public ?BrandDto $brand = null;
+    public BrandDtoCollection|array $brands;
     public ?StockDto $stock = null;
 }

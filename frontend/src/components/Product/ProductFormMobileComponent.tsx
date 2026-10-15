@@ -1,4 +1,4 @@
-import { Alert, Box, Button, CircularProgress, MenuItem, TextField } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, MenuItem, TextField, Select, InputLabel, FormControl, Chip, Typography  } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useFetchWithAuth } from "../../hooks/useFetchWithAuth";
 import type { Product, ScannedProduct } from "../../types/product";
@@ -15,11 +15,15 @@ interface Props {
     isEdit: boolean
 }
 
+interface BrandForm {
+    id: number | null
+    name: string
+}
+
 interface FormState {
     name: string
     barcode: string
-    brandId: number | null
-    brandName: string
+    brands: BrandForm[]
     stockId: number | null
     stockQuantity: number
     dlc: string
@@ -30,8 +34,13 @@ interface FormState {
 const emptyForm = (product?: Product | ScannedProduct): FormState => ({
     name:           product?.name ?? '',
     barcode:        product?.barcode ?? '',
-    brandId:        'brand' in (product ?? {}) ? (product as Product).brand?.id ?? null : null,
-    brandName:      'brand' in (product ?? {}) ? (product as Product).brand?.name ?? '' : (product as ScannedProduct)?.brands ?? '',
+    brands: 'brands' in (product ?? {}) 
+        ? typeof (product as Product).brands?.[0] === 'string'
+            // ScannedProduct — tableau de strings
+            ? (product as ScannedProduct).brands.map(name => ({ id: null, name }))
+            // Product — tableau d'objets Brand
+            : (product as Product).brands?.map(b => ({ id: b.id, name: b.name })) ?? []
+        : [],
     stockId:        'stock' in (product ?? {}) ? (product as Product).stock?.id ?? null : null,
     stockQuantity:  'stock' in (product ?? {}) ? (product as Product).stock?.quantity ?? 0 : 0,
     dlc:            'dlc' in (product ?? {}) ? formatDateForInput((product as Product).dlc) ?? '' : '',
@@ -42,8 +51,6 @@ const emptyForm = (product?: Product | ScannedProduct): FormState => ({
 export default function ProductFormMobileComponent({ product, scan, isEdit }: Props) {
     
     const navigate = useNavigate()
-
-    console.log
    
     const { brands, isLoading: isLoadingBrand } = useBrands()
     const { categories, isLoading: isLoadingCategory  } = useCategories()
@@ -60,15 +67,6 @@ export default function ProductFormMobileComponent({ product, scan, isEdit }: Pr
 
     const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, stockQuantity: Number(e.target.value) })
-    }
-
-    const handleBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selected = brands?.data.find(c => c.name === e.target.value)
-        setForm({
-            ...form,
-            brandName: e.target.value,
-            brandId: selected?.id ?? null,
-        })
     }
 
     const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,8 +103,7 @@ export default function ProductFormMobileComponent({ product, scan, isEdit }: Pr
                     body: JSON.stringify({
                         name: form.name,
                         barcode: form.barcode,
-                        brandId: form.brandId,
-                        brandName: form.brandName,
+                        brands: form.brands,
                         stockId: form.stockId,
                         stockQuantity: form.stockQuantity,
                         dlc: form.dlc,
@@ -124,6 +121,15 @@ export default function ProductFormMobileComponent({ product, scan, isEdit }: Pr
             setIsSubmitting(false)
         }
     }
+
+    console.log('form.brands', form.brands)
+
+    const allBrands = [
+        ...(brands?.data ?? []),
+        ...(scan ? (product as ScannedProduct)?.brands
+            ?.filter(name => !brands?.data.some(b => b.name === name))
+            ?.map(name => ({ id: null, name })) ?? [] : [])
+    ]
 
     useEffect(() => {
         setForm(emptyForm(product))
@@ -166,53 +172,64 @@ export default function ProductFormMobileComponent({ product, scan, isEdit }: Pr
                         fullWidth
                     />
 
-                    {scan ? (
-                        <TextField
-                            label="Marque" 
-                            name="brandName" 
-                            value={form.brandName}
-                            onChange={handleChange}
-                            error={!!errors.brandName}
-                            helperText={errors.brandName}
-                            size="small"
-                            fullWidth
-                        />
-                    ) : (
-                        isLoadingBrand ? (
-                            <TextField
-                                select 
-                                label="Marque" 
-                                size="small"
-                                fullWidth
-                                disabled
-                                value=""
-                                slotProps={{
-                                    input: {
-                                        endAdornment: <CircularProgress size={16} sx={{ mr: 2 }} />,
-                                    },
-                                }}
-                            >
-                                <MenuItem value="" />
-                            </TextField>
-                            
-                        ) : brands?.data.length ? (
-                            <TextField
-                                select 
-                                label="Marque" 
-                                name="brandName" 
-                                value={form.brandName}
-                                onChange={handleBrandChange} 
-                                error={!!errors.brandName}
-                                helperText={errors.brandName}
-                                size="small"
-                                fullWidth
-                            >
-                                {brands.data.map(brand => (
-                                    <MenuItem key={brand.id} value={brand.name}>{brand.name}</MenuItem>
-                                ))}
-                            </TextField>
-                        ) : null
-                    )}
+                    <FormControl fullWidth size="small" disabled={isLoadingBrand}>
+                        <InputLabel>Marques</InputLabel>
+                        <Select
+                            multiple
+                            value={form.brands.map(b => b.name)}
+                            onChange={(e) => {
+                                const selected = e.target.value as string[]
+                                setForm({
+                                    ...form,
+                                    brands: selected.map(name => {
+                                        const existing = brands?.data.find(b => b.name === name)
+                                        return { id: existing?.id ?? null, name }
+                                    })
+                                })
+                            }}
+                            label="Marques"
+                            renderValue={(selected) => (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                    {(selected as string[]).map(name => {
+                                        const existsInDb = brands?.data.some(b => b.name === name)
+                                        return (
+                                            <Chip 
+                                                key={name} 
+                                                label={name} 
+                                                size="small"
+                                                color={existsInDb ? 'primary' : 'warning'}
+                                            />
+                                        )
+                                    })}
+                                </Box>
+                            )}
+                        >
+                            {allBrands.map(brand => {
+                                const existsInDb = brands?.data.some(b => b.name === brand.name)
+                                
+                                return (
+                                    <MenuItem 
+                                        key={brand.name} 
+                                        value={brand.name}
+                                        sx={{
+                                            borderLeft: existsInDb 
+                                                ? '3px solid green' 
+                                                : '3px solid orange',
+                                        }}
+                                    >
+                                        {brand.name}
+                                        {!existsInDb && (
+                                            <Typography variant="caption" sx={{ ml: 1, color: 'warning.main' }}>
+                                                nouvelle
+                                            </Typography>
+                                        )}
+                                    </MenuItem>
+                                )
+                            })}
+                        </Select>
+                    </FormControl>
+
+                    
 
                     <TextField
                         label="Quantité"

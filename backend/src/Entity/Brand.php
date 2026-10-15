@@ -38,10 +38,7 @@ class Brand
     #[Groups(['user:read'])]
     private ?User $updatedBy = null;
 
-    /**
-     * @var Collection<int, Product>
-     */
-    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'brand1')]
+    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'brands')]
     private Collection $products;
 
     public function __construct()
@@ -123,24 +120,18 @@ class Brand
         return $this->products;
     }
 
-    public function addProduct(Product $product): static
+    public function addProducts(Product $products): static
     {
-        if (!$this->products->contains($product)) {
-            $this->products->add($product);
-            $product->setBrand($this);
+        if (!$this->products->contains($products)) {
+            $this->products->add($products);
         }
 
         return $this;
     }
 
-    public function removeProduct(Product $product): static
+    public function removeProducts(Product $products): static
     {
-        if ($this->products->removeElement($product)) {
-            // set the owning side to null (unless already changed)
-            if ($product->getBrand() === $this) {
-                $product->setBrand(null);
-            }
-        }
+        $this->products->removeElement($products);
 
         return $this;
     }

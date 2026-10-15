@@ -115,7 +115,7 @@ export default function ProductDetailMobileComponent({ product }: Props) {
                 }
 
                 <Divider /> 
-                {product.brand && (
+                {product.brands && (
                     <Box >
                         <Box 
                             sx={{ 
@@ -126,14 +126,16 @@ export default function ProductDetailMobileComponent({ product }: Props) {
                             }}
                         >
                             <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
-                                Marque :
+                                Marque(s) :
                             </Typography> 
-                            <Chip
-                                label={product.brand.name}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontWeight: 500 }}
-                            />
+                            {product.brands.map((brand) => (
+                                <Chip
+                                    label={brand.name}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontWeight: 500, fontSize: 14 }}
+                                />
+                            ))}
                         </Box>
                     </Box>
                 )}

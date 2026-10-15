@@ -8,6 +8,7 @@ use App\Entity\Product;
 use App\Entity\Stock;
 use App\Entity\User;
 use App\Model\BrandDto;
+use App\Model\BrandDtoCollection;
 use App\Model\CategoryDto;
 use App\Model\ProductDto;
 use App\Model\StockDto;
@@ -28,6 +29,9 @@ final readonly class ProductManager
 
     public function createFromDto(ProductDto $dto, User $user): Product
     {
+
+
+
         $product = (new Product())
             ->setName($dto->name)
             ->setBarcode($dto->barcode)
@@ -36,8 +40,12 @@ final readonly class ProductManager
             ->setUpdatedAt(new DateTimeImmutable())
             ->setUpdatedBy($user)
             ->setCategory($this->resolveCategory($dto->category, $user))
-            ->setBrand($this->resolveBrand($dto->brand, $user))
             ->setStock($this->resolveStock($dto->stock, $user));
+
+        $brands = $this->resolveBrand($dto->brands, $user);
+        foreach ($brands as $brand) {
+            $product->addBrand($brand);
+        }
         
         $this->em->persist($product);
         $this->em->flush();
@@ -54,23 +62,46 @@ final readonly class ProductManager
             ->setUpdatedAt(new DateTimeImmutable())
             ->setUpdatedBy($user)
             ->setCategory($this->resolveCategory($dto->category, $user))
-            ->setBrand($this->resolveBrand($dto->brand, $user))
             ->setStock($this->resolveStock($dto->stock, $user));
+
+        foreach ($product->getBrands()->toArray() as $brand) {
+            $product->removeBrand($brand);
+        }
+        
+        $brands = $this->resolveBrand($dto->brands, $user);
+        foreach ($brands as $brand) {
+            $product->addBrand($brand);
+        }
 
         $this->em->flush();
     }
 
-    public function resolveBrand(BrandDto $dto, User $user): Brand
+    public function delete(Product $product): void
     {
-        if ($dto->id !== null && $brand = $this->brandRepository->find($dto->id)) {
-            return $brand;
+        $this->em->remove($product);
+        $this->em->flush();
+    }
+
+    public function resolveBrand(BrandDtoCollection $brandDtoCollection, User $user): array
+    {
+        $brands = [];
+
+        /** @var BrandDto $brandDto */
+        foreach ($brandDtoCollection as $brandDto) {
+            
+            if ($brandDto->id !== null && $brand = $this->brandRepository->find($brandDto->id)) {
+                $brands[] = $brand;
+                continue;
+            }
+
+            $brands[] = (new Brand())
+                ->setName($brandDto->name)
+                ->setCreatedBy($user)
+                ->setUpdatedAt(new DateTimeImmutable())
+                ->setUpdatedBy($user);
         }
-        
-        return (new Brand())
-            ->setName($dto->name)
-            ->setCreatedBy($user)
-            ->setUpdatedAt(new DateTimeImmutable())
-            ->setUpdatedBy($user);
+
+        return $brands;
     }
 
     public function resolveCategory(CategoryDto $dto, User $user): Category
@@ -86,24 +117,24 @@ final readonly class ProductManager
             ->setUpdatedBy($user);
     }
 
-public function resolveStock(StockDto $dto, User $user): Stock
-{
-    if ($dto->id !== null) {
-        /** @var Stock|null $stock */
-        $stock = $this->stockRepository->find($dto->id);
+    public function resolveStock(StockDto $dto, User $user): Stock
+    {
+        if ($dto->id !== null) {
+            /** @var Stock|null $stock */
+            $stock = $this->stockRepository->find($dto->id);
 
-        if ($stock !== null) {
-            if ($dto->quantity !== $stock->getQuantity()) {
-                $stock->setQuantity($dto->quantity);
+            if ($stock !== null) {
+                if ($dto->quantity !== $stock->getQuantity()) {
+                    $stock->setQuantity($dto->quantity);
+                }
+                return $stock;
             }
-            return $stock;
         }
-    }
 
-    return (new Stock())
-        ->setQuantity($dto->quantity)
-        ->setCreatedBy($user)
-        ->setUpdatedAt(new DateTimeImmutable())
-        ->setUpdatedBy($user);
-}
+        return (new Stock())
+            ->setQuantity($dto->quantity)
+            ->setCreatedBy($user)
+            ->setUpdatedAt(new DateTimeImmutable())
+            ->setUpdatedBy($user);
+    }
 }
